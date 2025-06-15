@@ -6,6 +6,11 @@ const withAndroidManifest = (config) =>
   NativeAndroidManifest(config, async (config) => {
     const mainApplication = config.modResults.manifest.application[0];
 
+    // Ensure uses-feature array exists for optional features
+    if (!config.modResults.manifest["uses-feature"]) {
+      config.modResults.manifest["uses-feature"] = [];
+    }
+
     // Initialize activity array if it doesn't exist
     if (!mainApplication.activity) {
       mainApplication.activity = [];
@@ -35,6 +40,51 @@ const withAndroidManifest = (config) =>
 
     if (mainActivity) {
       mainActivity.$["android:supportsPictureInPicture"] = "true";
+
+      if (process.env.EXPO_TV === "1") {
+        if (!mainActivity["intent-filter"]) {
+          mainActivity["intent-filter"] = [{}];
+        }
+
+        // Use the first intent filter or create a new one
+        const intentFilter = mainActivity["intent-filter"][0];
+
+        if (!intentFilter.category) {
+          intentFilter.category = [];
+        }
+
+        const hasLeanbackCategory = intentFilter.category.some(
+          (c) =>
+            c.$?.["android:name"] ===
+            "android.intent.category.LEANBACK_LAUNCHER",
+        );
+
+        if (!hasLeanbackCategory) {
+          intentFilter.category.push({
+            $: {
+              "android:name": "android.intent.category.LEANBACK_LAUNCHER",
+            },
+          });
+        }
+      }
+    }
+
+    if (process.env.EXPO_TV === "1") {
+      const usesFeatureArray = config.modResults.manifest["uses-feature"];
+
+      const leanbackFeatureExists = usesFeatureArray.some(
+        (feature) =>
+          feature.$?.["android:name"] === "android.software.leanback",
+      );
+
+      if (!leanbackFeatureExists) {
+        usesFeatureArray.push({
+          $: {
+            "android:name": "android.software.leanback",
+            "android:required": "true",
+          },
+        });
+      }
     }
 
     return config;
