@@ -1,14 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { PropsWithChildren, ReactNode } from "react";
 import {
+  Platform,
   TouchableOpacity,
+  Pressable,
   type TouchableOpacityProps,
   View,
   type ViewProps,
 } from "react-native";
 import { Text } from "../common/Text";
 
-interface Props extends TouchableOpacityProps, ViewProps {
+const TouchableComponent = Platform.isTV ? Pressable : TouchableOpacity;
+
+interface Props extends React.ComponentProps<typeof TouchableComponent>, ViewProps {
   title?: string | null | undefined;
   value?: string | null | undefined;
   children?: ReactNode;
@@ -17,6 +21,7 @@ interface Props extends TouchableOpacityProps, ViewProps {
   showArrow?: boolean;
   textColor?: "default" | "blue" | "red";
   onPress?: () => void;
+  hasTVPreferredFocus?: boolean;
 }
 
 export const ListItem: React.FC<PropsWithChildren<Props>> = ({
@@ -33,12 +38,13 @@ export const ListItem: React.FC<PropsWithChildren<Props>> = ({
 }) => {
   if (onPress)
     return (
-      <TouchableOpacity
+      <TouchableComponent
         disabled={disabled}
         onPress={onPress}
         className={`flex flex-row items-center justify-between bg-neutral-900 h-11 pr-4 pl-4 ${
           disabled ? "opacity-50" : ""
         }`}
+        focusable={Platform.isTV}
         {...props}
       >
         <ListItemContent
@@ -51,7 +57,7 @@ export const ListItem: React.FC<PropsWithChildren<Props>> = ({
         >
           {children}
         </ListItemContent>
-      </TouchableOpacity>
+      </TouchableComponent>
     );
   return (
     <View

@@ -1,11 +1,13 @@
 import { useHaptic } from "@/hooks/useHaptic";
 import type React from "react";
 import { type PropsWithChildren, type ReactNode, useMemo } from "react";
-import { Platform, Text, TouchableOpacity, View } from "react-native";
+import { Platform, Text, TouchableOpacity, Pressable, View } from "react-native";
 import { Loader } from "./Loader";
 
+const TouchableComponent = Platform.isTV ? Pressable : TouchableOpacity;
+
 export interface ButtonProps
-  extends React.ComponentProps<typeof TouchableOpacity> {
+  extends React.ComponentProps<typeof TouchableComponent> {
   onPress?: () => void;
   className?: string;
   textClassName?: string;
@@ -16,6 +18,11 @@ export interface ButtonProps
   iconRight?: ReactNode;
   iconLeft?: ReactNode;
   justify?: "center" | "between";
+  hasTVPreferredFocus?: boolean;
+  nextFocusDown?: number;
+  nextFocusUp?: number;
+  nextFocusLeft?: number;
+  nextFocusRight?: number;
 }
 
 export const Button: React.FC<PropsWithChildren<ButtonProps>> = ({
@@ -47,7 +54,7 @@ export const Button: React.FC<PropsWithChildren<ButtonProps>> = ({
   const lightHapticFeedback = useHaptic("light");
 
   return (
-    <TouchableOpacity
+    <TouchableComponent
       className={`
         p-3 rounded-xl items-center justify-center
         ${(loading || disabled) && "opacity-50"}
@@ -61,6 +68,7 @@ export const Button: React.FC<PropsWithChildren<ButtonProps>> = ({
         }
       }}
       disabled={disabled || loading}
+      focusable={Platform.isTV}
       {...props}
     >
       {loading ? (
@@ -88,6 +96,6 @@ export const Button: React.FC<PropsWithChildren<ButtonProps>> = ({
           {iconRight ? iconRight : <View className='w-4' />}
         </View>
       )}
-    </TouchableOpacity>
+    </TouchableComponent>
   );
 };
