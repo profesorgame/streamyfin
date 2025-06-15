@@ -19,7 +19,7 @@ import { getStreamUrl } from "@/utils/jellyfin/media/getStreamUrl";
 import { writeToLog } from "@/utils/log";
 import { storage } from "@/utils/mmkv";
 import generateDeviceProfile from "@/utils/profiles/native";
-import { msToTicks, ticksToSeconds } from "@/utils/time";
+import { msToTicks, ticksToSeconds, secondsToMs } from "@/utils/time";
 import {
   type BaseItemDto,
   type MediaSourceInfo,
@@ -43,7 +43,12 @@ import React, {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Platform, View } from "react-native";
+import {
+  Alert,
+  Platform,
+  View,
+  useTVEventHandler,
+} from "react-native";
 import { useSharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 const downloadProvider = !Platform.isTV
@@ -503,6 +508,35 @@ export default function page() {
   }
 
   const [isMounted, setIsMounted] = useState(false);
+
+  useTVEventHandler((evt) => {
+    if (!Platform.isTV) return;
+
+    switch (evt.eventType) {
+      case "playPause":
+        togglePlay();
+        break;
+      case "rewind": {
+        const newTime = Math.max(
+          0,
+          progress.get() - secondsToMs(settings.rewindSkipTime),
+        );
+        videoRef.current?.seekTo(newTime);
+        break;
+      }
+      case "fastForward": {
+        const newTime =
+          progress.get() + secondsToMs(settings.forwardSkipTime);
+        videoRef.current?.seekTo(newTime);
+        break;
+      }
+      case "menu":
+        navigation.goBack();
+        break;
+      default:
+        break;
+    }
+  });
 
   // Add useEffect to handle mounting
   useEffect(() => {
