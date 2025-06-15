@@ -7,9 +7,16 @@ import type {
 } from "@jellyfin/sdk/lib/generated-client/models";
 import { useRouter, useSegments } from "expo-router";
 import { type PropsWithChildren, useCallback } from "react";
-import { TouchableOpacity, type TouchableOpacityProps } from "react-native";
+import {
+  Platform,
+  TouchableOpacity,
+  Pressable,
+  type TouchableOpacityProps,
+} from "react-native";
 
-interface Props extends TouchableOpacityProps {
+const TouchableComponent = Platform.isTV ? Pressable : TouchableOpacity;
+
+interface Props extends React.ComponentProps<typeof TouchableComponent> {
   item: BaseItemDto;
 }
 
@@ -102,16 +109,17 @@ export const TouchableItemRouter: React.FC<PropsWithChildren<Props>> = ({
     from === "(favorites)"
   )
     return (
-      <TouchableOpacity
+      <TouchableComponent
         onLongPress={showActionSheet}
         onPress={() => {
           const url = itemRouter(item, from);
           // @ts-expect-error
           router.push(url);
         }}
+        focusable={Platform.isTV}
         {...props}
       >
         {children}
-      </TouchableOpacity>
+      </TouchableComponent>
     );
 };

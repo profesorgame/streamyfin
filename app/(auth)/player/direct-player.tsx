@@ -43,7 +43,7 @@ import React, {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Platform, View } from "react-native";
+import { Alert, Platform, View, useTVEventHandler } from "react-native";
 import { useSharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 const downloadProvider = !Platform.isTV
@@ -75,6 +75,20 @@ export default function page() {
   const progress = useSharedValue(0);
   const isSeeking = useSharedValue(false);
   const cacheProgress = useSharedValue(0);
+  useTVEventHandler((evt) => {
+    if (!Platform.isTV) return;
+    if (evt.eventType === "playPause") {
+      togglePlay();
+    }
+    if (evt.eventType === "rewind" || evt.eventType === "left") {
+      const newTime = Math.max(progress.get() - 10000, 0);
+      videoRef.current?.seekTo(newTime);
+    }
+    if (evt.eventType === "fastForward" || evt.eventType === "right") {
+      const newTime = progress.get() + 10000;
+      videoRef.current?.seekTo(newTime);
+    }
+  });
   const VolumeManager = Platform.isTV
     ? null
     : require("react-native-volume-manager");

@@ -5,10 +5,13 @@ import type { PropsWithChildren } from "react";
 import {
   Platform,
   TouchableOpacity,
+  Pressable,
   type TouchableOpacityProps,
 } from "react-native";
 
-interface Props extends TouchableOpacityProps {
+const TouchableComponent = Platform.isTV ? Pressable : TouchableOpacity;
+
+interface Props extends React.ComponentProps<typeof TouchableComponent> {
   onPress?: () => void;
   icon?: keyof typeof Ionicons.glyphMap;
   background?: boolean;
@@ -40,9 +43,10 @@ export const RoundButton: React.FC<PropsWithChildren<Props>> = ({
 
   if (fillColor)
     return (
-      <TouchableOpacity
+      <TouchableComponent
         onPress={handlePress}
         className={`rounded-full ${buttonSize} flex items-center justify-center ${fillColorClass}`}
+        focusable={Platform.isTV}
         {...props}
       >
         {icon ? (
@@ -53,14 +57,15 @@ export const RoundButton: React.FC<PropsWithChildren<Props>> = ({
           />
         ) : null}
         {children ? children : null}
-      </TouchableOpacity>
+      </TouchableComponent>
     );
 
   if (background === false)
     return (
-      <TouchableOpacity
+      <TouchableComponent
         onPress={handlePress}
         className={`rounded-full ${buttonSize} flex items-center justify-center ${fillColorClass}`}
+        focusable={Platform.isTV}
         {...props}
       >
         {icon ? (
@@ -71,16 +76,17 @@ export const RoundButton: React.FC<PropsWithChildren<Props>> = ({
           />
         ) : null}
         {children ? children : null}
-      </TouchableOpacity>
+      </TouchableComponent>
     );
 
   if (Platform.OS === "android")
     return (
-      <TouchableOpacity
+      <TouchableComponent
         onPress={handlePress}
         className={`rounded-full ${buttonSize} flex items-center justify-center ${
           fillColor ? fillColorClass : "bg-neutral-800/80"
         }`}
+        focusable={Platform.isTV}
         {...props}
       >
         {icon ? (
@@ -91,11 +97,11 @@ export const RoundButton: React.FC<PropsWithChildren<Props>> = ({
           />
         ) : null}
         {children ? children : null}
-      </TouchableOpacity>
+      </TouchableComponent>
     );
 
   return (
-    <TouchableOpacity onPress={handlePress} {...props}>
+    <TouchableComponent onPress={handlePress} focusable={Platform.isTV} {...props}>
       <BlurView
         intensity={90}
         className={`rounded-full overflow-hidden ${buttonSize} flex items-center justify-center ${fillColorClass}`}
@@ -110,6 +116,6 @@ export const RoundButton: React.FC<PropsWithChildren<Props>> = ({
         ) : null}
         {children ? children : null}
       </BlurView>
-    </TouchableOpacity>
+    </TouchableComponent>
   );
 };
